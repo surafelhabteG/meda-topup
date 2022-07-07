@@ -1,0 +1,64 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const Transaction = new Schema({
+   
+    toMobileTelephone: {
+         type: String,
+        required: true
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    refNo: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    transactionNo: {
+        type:Number ,
+        unique: true,
+        required: false
+    },
+     transactionId: {
+        type:String ,
+        unique: true,
+        required: false
+    },
+    topUpStatus: {
+        type: String,
+        required: false,
+        default: 'PENDING'
+    },
+    paymentStatus: {
+        type: String,
+        required: false,
+        default: 'Pending'
+    },
+    paymentMethod: {
+        type: String,
+        required: false,
+        default: 'N/A'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const HistorySchema = new Schema({
+    fromMobileTelephone: {
+         type: String,
+        required: true,
+        unique:true
+    },
+    medaUUID: {
+        type: String,
+        unique: true,
+    },
+    topupTransaction:[Transaction]
+   
+});
+
+module.exports = mongoose.model('History', HistorySchema);
