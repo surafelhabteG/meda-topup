@@ -63,10 +63,6 @@ const preRequestScript =async (req,res,next)=>{
 
 app.use(preRequestScript);
 
-app.get('/lala',async (req,res)=>{
-  res.status(200).json('success');
-});
-
 app.get('/paymentCallback',(req,res)=>{
   let body = req.body;
 
