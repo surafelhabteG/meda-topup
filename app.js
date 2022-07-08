@@ -201,48 +201,47 @@ app.get('/balance',async (req,res)=>{
 });
 
 app.post('/sideeffect',async (req,res)=>{
-  // let statusPostResult = saveStatusPost(req.body);
+  let statusPostResult = saveStatusPost(req.body);
 
-  // let history = await History.find({fromMobileTelephone:req.body.fromMobileTelephone});
+  let history = await History.find({fromMobileTelephone:req.body.fromMobileTelephone});
 
-  // if(!history.length){
-  //   history = await History.find({medaUUID:req.body.medaUUID});
-  // }
+  if(!history.length){
+    history = await History.find({medaUUID:req.body.medaUUID});
+  }
   
-  // if(history.length){
-  //   history[0].topupTransaction.push({
-  //       toMobileTelephone: req.body.toMobileTelephone,
-  //       amount:req.body.amount ,
-  //       refNo:req.body.refNo ,
-  //   });
-  //   history[0].save()
-  //   .then(data=>{
-  //     return res.status(200).json(data)
+  if(history.length){
+    history[0].topupTransaction.push({
+        toMobileTelephone: req.body.toMobileTelephone,
+        amount:req.body.amount ,
+        refNo:req.body.refNo ,
+    });
+    history[0].save()
+    .then(data=>{
+      return res.status(200).json(data)
       
-  //   })
-  //   .catch(err=>{
-  //     return res.status(500).json(err)
-  //   })
-  // } else{
-  //   const history = new History({
-  //     fromMobileTelephone:req.body.fromMobileTelephone,
-  //     medaUUID:req.body.medaUUID,
-  //     topupTransaction:[{
-  //       toMobileTelephone: req.body.toMobileTelephone,
-  //       amount:req.body.amount ,
-  //       refNo:req.body.refNo ,
-  //     }]
-  //   });
-  //   history.save()
-  //   .then(data=>{
-  //     return res.status(200).json(data)
-  //   })
-  //   .catch(err=>{
-  //     return res.status(500).json(err)
-  //   })
-  // }
+    })
+    .catch(err=>{
+      return res.status(500).json(err)
+    })
+  } else{
+    const history = new History({
+      fromMobileTelephone:req.body.fromMobileTelephone,
+      medaUUID:req.body.medaUUID,
+      topupTransaction:[{
+        toMobileTelephone: req.body.toMobileTelephone,
+        amount:req.body.amount ,
+        refNo:req.body.refNo ,
+      }]
+    });
+    history.save()
+    .then(data=>{
+      return res.status(200).json(data)
+    })
+    .catch(err=>{
+      return res.status(500).json(err)
+    })
+  }
 
-  return res.status(200).json('success');
 
 })
 
