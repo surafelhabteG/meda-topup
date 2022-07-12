@@ -160,7 +160,7 @@ app.put('/retry/:id',async(req,res)=>{
         return res.status(200).json({status:true, message:'success'});  
 
       } else {
-        return res.status(400).json({status:false, message:result.message});
+        return res.status(200).json({status:false, message:result.message});
       }
     })
     .catch(err=>{
