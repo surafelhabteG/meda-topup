@@ -143,6 +143,8 @@ app.put('/retry/:id',async(req,res)=>{
     fromMobileTelephone:req.body.fromMobileTelephone,"topupTransaction.refNo":req.body.refNo
   };
 
+  const data = { $set: { "topupTransaction.$.topUpStatus": result.status,"topupTransaction.$.updatedAt": new Date(),}}
+
   if(!process.env.token)res.send('invalid token');
 
   fetch(url, {
@@ -155,8 +157,8 @@ app.put('/retry/:id',async(req,res)=>{
     .then(async response=>{
       const result = await response.json();
 
-      if(result.status){
-        await History.updateOne(query,{ $set: { "topupTransaction.$.topUpStatus": result.status, }});
+      if(!result.status){
+        await History.updateOne(query,data);
         return res.status(200).json({status:true, message:'success'});  
 
       } else {
