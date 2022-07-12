@@ -137,7 +137,6 @@ app.post('/airtime-topup',(req,res)=>{
  */
 
 app.put('/retry/:id',async(req,res)=>{
-  
   const url = `https://api.teleport.et/api/airtime-topup/transactions/${req.params.id}/retry`;
   
   const query = {
@@ -156,12 +155,16 @@ app.put('/retry/:id',async(req,res)=>{
     .then(async response=>{
       const result = await response.json();
 
-      if(result.status)
+      if(!result.hasOwnProperty("success")){
         await History.updateOne(query,{ $set: { "topupTransaction.$.topUpStatus": result.status, }});
-        res.status(200).json(result);     
+        return res.status(200).json({status:true, message:'success'});  
+
+      } else {
+        return res.status(400).json({status:false, message:result.message});
+      }
     })
     .catch(err=>{
-        res.status(500).json(err);
+      return res.status(500).json(err);
     })
 });
 
