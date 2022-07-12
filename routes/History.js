@@ -33,7 +33,7 @@ router.get('/meda/:medaUUID',async (req,res)=>{
       
     const history = await History.aggregate([
       {$unwind: '$topupTransaction'},
-      {$sort: {'topupTransaction.createdAt':-1}},
+      {$sort: {'topupTransaction.updatedAt':-1}},
       { $match : { medaUUID : req.params.medaUUID } },
       {$group: {_id: '$_id', 'Trans': {$push:'$topupTransaction'}}},
       {$project: {'topupTransaction':'$Trans'}}

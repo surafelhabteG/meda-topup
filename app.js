@@ -278,7 +278,8 @@ async function updateTopupStatus(req,res, isTopupSuccess = true){
         "topupTransaction.$.paymentStatus": 'PAYED', 
         "topupTransaction.$.topUpStatus": isTopupSuccess ? req.status : null, 
         "topupTransaction.$.transactionNo": isTopupSuccess ? req.transactionNo : null, 
-        "topupTransaction.$.transactionId": isTopupSuccess ? req.id : null
+        "topupTransaction.$.transactionId": isTopupSuccess ? req.id : null,
+        "topupTransaction.$.updatedAt": new Date(),
       }}
 
       await History.updateOne(query,data);
