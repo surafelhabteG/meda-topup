@@ -136,44 +136,33 @@ app.post('/airtime-topup',(req,res)=>{
  send mongo _id and refNo of failed topup to retry
  */
 
-app.put('/airtime-topup/transactions/:id/:refNo/retry',async(req,res)=>{
+app.put('/retry/:id',async(req,res)=>{
   
-  let id;
-  let i = 0
-   const retryId = await History.find({_id:new mongoose.Types.ObjectId(req.params.id)});
-   if(retryId.length > 0){
-      for(;i<retryId[0].topupTransaction.length;i++){
-        if(retryId[0].topupTransaction[i].refNo == req.params.refNo){
-          id =retryId[0].topupTransaction[i].transactionId;
-          break;
-        }
+  const url = `https://api.teleport.et/api/airtime-topup/transactions/${req.params.id}/retry`;
+  
+  const query = {
+    fromMobileTelephone:req.body.fromMobileTelephone,"topupTransaction.refNo":req.body.refNo
+  };
+
+  if(!process.env.token)res.send('invalid token');
+
+  fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.token}`,
       }
-      const url = `https://api.teleport.et/api/airtime-topup/transactions/${id}/retry`;
+    }) 
+    .then(async response=>{
+      const result = await response.json();
 
-      if(!process.env.token)res.send('invalid token');
-      fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-              Authorization: `Bearer ${process.env.token}`,
-          }
-        }) 
-        .then(async response=>{
-          const result = await response.json();
-          if(result.status)
-          retryId[0].topupTransaction[i].topUpStatus = result.status;
-            res.send(result);     
-        })
-        .catch(err=>{
-            res.send(err);
-        })
-   } else {
-     res.send('record not found.')
-
-   }
-
-
-
+      if(result.status)
+        await History.updateOne(query,{ $set: { "topupTransaction.$.topUpStatus": result.status, }});
+        res.status(200).json(result);     
+    })
+    .catch(err=>{
+        res.status(500).json(err);
+    })
 });
 
 /**
@@ -245,9 +234,6 @@ app.post('/sideeffect',async (req,res)=>{
 
 })
 
-function airTimeTopup(req){
-  
-}
 
 function saveStatusPost(req){
   const payment = new medaPayment({
