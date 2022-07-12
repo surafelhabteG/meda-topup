@@ -155,7 +155,7 @@ app.put('/retry/:id',async(req,res)=>{
     .then(async response=>{
       const result = await response.json();
 
-      if(!result.hasOwnProperty("success")){
+      if(result.status){
         await History.updateOne(query,{ $set: { "topupTransaction.$.topUpStatus": result.status, }});
         return res.status(200).json({status:true, message:'success'});  
 
