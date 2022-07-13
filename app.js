@@ -288,7 +288,7 @@ async function updateTopupStatus(req,res, isTopupSuccess = true){
 
       await medaPayment.updateOne({refNo:req.refNo}, { $set: { "paymentStatus": "PAYED", } });
 
-      return res.status(200).json('success');
+      return res.status(200).json(req);
 
     })
     .catch(err=>{
