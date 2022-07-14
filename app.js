@@ -92,12 +92,6 @@ app.post('/airtime-topup',(req,res)=>{
 app.put('/retry/:id',async(req,res)=>{
   const url = `https://api.teleport.et/api/airtime-topup/transactions/${req.params.id}/retry`;
   
-  const query = {
-    fromMobileTelephone:req.body.fromMobileTelephone,"topupTransaction.refNo":req.body.refNo
-  };
-  
-  const data = { $set: { "topupTransaction.$.topUpStatus": result.status,"topupTransaction.$.updatedAt": new Date(),}}
-
   if(!process.env.token)res.send('invalid token');
 
   fetch(url, {
@@ -110,19 +104,27 @@ app.put('/retry/:id',async(req,res)=>{
     .then(async response=>{
       const result = await response.json();
 
-      if(result.status){
-        await History.updateOne(query,data);
-        return res.status(200).send({status:true, message:'success'});  
+      if(!result.status || !result.success){
+        return res.status(200).json({status:false, message:result.message});
 
       } else {
-        return res.status(200).send({status:false, message:result.message});
+        const query = {
+          fromMobileTelephone:req.body.fromMobileTelephone,"topupTransaction.refNo":req.body.refNo
+        };
+        const data = { $set: { "topupTransaction.$.topUpStatus": result.status,"topupTransaction.$.updatedAt": new Date(),}}
+
+        await History.updateOne(query,data);
+        return res.status(200).json({status:true, message:'success'});
+
       }
+
+      
+
     })
     .catch(err=>{
       return res.status(500).json(err);
     })
 });
-
 
 app.get('/balance',async (req,res)=>{  
   fetch('https://api.teleport.et/api/airtime-wallet/balance', {
