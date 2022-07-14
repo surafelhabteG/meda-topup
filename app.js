@@ -112,10 +112,10 @@ app.put('/retry/:id',async(req,res)=>{
 
       if(result.status){
         await History.updateOne(query,data);
-        return res.status(200).json({status:true, message:'success'});  
+        return res.status(200).send({status:true, message:'success'});  
 
       } else {
-        return res.status(200).json({status:false, message:result.message});
+        return res.status(200).send({status:false, message:result.message});
       }
     })
     .catch(err=>{
