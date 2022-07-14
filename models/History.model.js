@@ -18,12 +18,12 @@ const Transaction = new Schema({
     },
     transactionNo: {
         type:Number ,
-        unique: true,
+        unique: false,
         required: false
     },
      transactionId: {
         type:String ,
-        unique: true,
+        unique: false,
         required: false
     },
     topUpStatus: {
