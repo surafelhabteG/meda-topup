@@ -67,25 +67,16 @@ app.get('/paymentCallback',(req,res)=>{
   let body = req.body;
 
   if(body.status == 'PAYED'){
+
     let data = {
-      medaUUID:body.metaData.metaData.medaUUID,
       refNo:body.referenceNumber ,
-      paymentStatus:body.status,
       fromMobileTelephone:body.accountNumber,
       toMobileTelephone: body.metaData.metaData.toMobileTelephone,
       amount:body.amount,
       paymentMethod:body.paymentMethod
     }
 
-    let result;
-
-    // call to the status post
-     result = PaymentStatusRoute.call('statusPost', data);
-    // call to topup process
-     result = airTimeTopup(data);
-
-    res.status(result.status).json(result.data);
-
+    airTopup(data, res);
   }
 
 });
@@ -95,46 +86,8 @@ app.get('/paymentCallback',(req,res)=>{
  */
 
 app.post('/airtime-topup',(req,res)=>{
-  let msisdn = req.body.toMobileTelephone;
-  let topupType = "PREPAID";
-  let amount = req.body.amount;
-     
-  const url = 'https://api.teleport.et/api/airtime-topup';
-
-  if(!process.env.token)res.send('invalid token');
-  fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.token}`,
-      },
-      body: JSON.stringify({
-      "msisdn": `${msisdn}`,
-      "topupType": `${topupType}`,
-      "amount": amount
-  })
-    }) 
-    .then(async (response)=>{
-      const result = await response.json();
-      
-      if(result.message !== 'Insufficient Balance'){
-        result.refNo = req.body.refNo;
-        result.fromMobileTelephone = req.body.fromMobileTelephone;
-
-        updateTopupStatus(result,res);
-
-      } 
-    })
-    .catch(err=>{
-      updateTopupStatus(result,res);
-
-      return res.status(500).json(err);
-    })
+  airTopup(req.body, res);
 });
-
-/**
- send mongo _id and refNo of failed topup to retry
- */
 
 app.put('/retry/:id',async(req,res)=>{
   const url = `https://api.teleport.et/api/airtime-topup/transactions/${req.params.id}/retry`;
@@ -170,9 +123,6 @@ app.put('/retry/:id',async(req,res)=>{
     })
 });
 
-/**
-  **check balance endpoint**
- */
 
 app.get('/balance',async (req,res)=>{  
   fetch('https://api.teleport.et/api/airtime-wallet/balance', {
@@ -259,6 +209,44 @@ function saveStatusPost(req){
   })
 }
 
+function airTopup(req,res){
+  let msisdn = req.toMobileTelephone;
+  let topupType = "PREPAID";
+  let amount = req.amount;
+     
+  const url = 'https://api.teleport.et/api/airtime-topup';
+
+  if(!process.env.token)res.send('invalid token');
+  fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.token}`,
+      },
+      body: JSON.stringify({
+      "msisdn": `${msisdn}`,
+      "topupType": `${topupType}`,
+      "amount": amount
+  })
+    }) 
+    .then(async (response)=>{
+      const result = await response.json();
+      
+      if(result.message !== 'Insufficient Balance'){
+        result.refNo = req.refNo;
+        result.fromMobileTelephone = req.fromMobileTelephone;
+
+        updateTopupStatus(result,res);
+
+      } 
+    })
+    .catch(error=>{
+      updateTopupStatus(result,res);
+
+      return res.status(500).json(error);
+    })
+}
+
 async function updateTopupStatus(req,res, isTopupSuccess = true){
   const url = `https://api.pay.meda.chat/api/bills/${req.refNo}`;
 
@@ -276,7 +264,7 @@ async function updateTopupStatus(req,res, isTopupSuccess = true){
         fromMobileTelephone:req.fromMobileTelephone,"topupTransaction.refNo":req.refNo
       }
       const data = { $set: { 
-        "topupTransaction.$.paymentMethod": billResult.paymentMethod, 
+        "topupTransaction.$.paymentMethod": req.paymentMethod?? billResult.paymentMethod, 
         "topupTransaction.$.paymentStatus": 'PAYED', 
         "topupTransaction.$.topUpStatus": isTopupSuccess ? req.status : null, 
         "topupTransaction.$.transactionNo": isTopupSuccess ? req.transactionNo : null, 
