@@ -236,7 +236,7 @@ function airTopup(req,res){
         result.fromMobileTelephone = req.fromMobileTelephone;
         result.paymentMethod = req.paymentMethod;
 
-        updateTopupStatus(result,res);
+        updateTopupStatus(result,res, false);
 
       }  else {
         updateTopupStatus(req,res, false);
