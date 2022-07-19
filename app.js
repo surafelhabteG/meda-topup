@@ -231,15 +231,15 @@ function airTopup(req,res){
     .then(async (response)=>{
       const result = await response.json();
       
-      if(result.message !== 'Insufficient Balance'){
+      if(result.message == 'Insufficient Balance'){
+        updateTopupStatus(req,res, false);
+
+      }  else {
         result.refNo = req.refNo;
         result.fromMobileTelephone = req.fromMobileTelephone;
         result.paymentMethod = req.paymentMethod;
 
-        updateTopupStatus(result,res, false);
-
-      }  else {
-        updateTopupStatus(req,res, false);
+        updateTopupStatus(result,res);
 
       }
 
