@@ -29,7 +29,6 @@ const Transaction = new Schema({
     topUpStatus: {
         type: String,
         required: false,
-        default: 'PENDING'
     },
     paymentStatus: {
         type: String,
