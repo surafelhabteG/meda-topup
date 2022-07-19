@@ -234,14 +234,18 @@ function airTopup(req,res){
       if(result.message !== 'Insufficient Balance'){
         result.refNo = req.refNo;
         result.fromMobileTelephone = req.fromMobileTelephone;
+        result.paymentMethod = req.paymentMethod;
 
         updateTopupStatus(result,res);
 
-      } 
+      }  else {
+        updateTopupStatus(result,res, false);
+
+      }
+
     })
     .catch(error=>{
-      updateTopupStatus(result,res);
-
+      updateTopupStatus(req,res, false);
       return res.status(500).json(error);
     })
 }

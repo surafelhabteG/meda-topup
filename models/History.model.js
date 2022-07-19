@@ -39,7 +39,7 @@ const Transaction = new Schema({
     paymentMethod: {
         type: String,
         required: false,
-        default: 'N/A'
+        default: 'N/S'
     },
     createdAt: {
         type: Date,
