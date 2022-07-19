@@ -247,41 +247,25 @@ function airTopup(req,res){
 }
 
 async function updateTopupStatus(req,res, isTopupSuccess = true){
-  const url = `https://api.pay.meda.chat/api/bills/${req.refNo}`;
+  const query = {
+    fromMobileTelephone:req.fromMobileTelephone,"topupTransaction.refNo":req.refNo
+  }
 
-  fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.bill_token}`,
-      },
-    }) 
-    .then(async (response)=>{
-      const billResult = await response.json();
+  const data = { $set: { 
+    "topupTransaction.$.paymentMethod": req.paymentMethod, 
+    "topupTransaction.$.paymentStatus": 'PAYED', 
+    "topupTransaction.$.topUpStatus": isTopupSuccess ? req.status : null, 
+    "topupTransaction.$.transactionNo": isTopupSuccess ? req.transactionNo : null, 
+    "topupTransaction.$.transactionId": isTopupSuccess ? req.id : null,
+    "topupTransaction.$.updatedAt": new Date(),
+  }}
 
-      const query = {
-        fromMobileTelephone:req.fromMobileTelephone,"topupTransaction.refNo":req.refNo
-      }
-      const data = { $set: { 
-        "topupTransaction.$.paymentMethod": req.paymentMethod?? billResult.paymentMethod, 
-        "topupTransaction.$.paymentStatus": 'PAYED', 
-        "topupTransaction.$.topUpStatus": isTopupSuccess ? req.status : null, 
-        "topupTransaction.$.transactionNo": isTopupSuccess ? req.transactionNo : null, 
-        "topupTransaction.$.transactionId": isTopupSuccess ? req.id : null,
-        "topupTransaction.$.updatedAt": new Date(),
-      }}
+  await History.updateOne(query,data);
 
-      await History.updateOne(query,data);
+  await medaPayment.updateOne({refNo:req.refNo}, { $set: { "paymentStatus": "PAYED", } });
 
-      await medaPayment.updateOne({refNo:req.refNo}, { $set: { "paymentStatus": "PAYED", } });
+  return res.status(200).json(req);
 
-      return res.status(200).json(req);
-
-    })
-    .catch(err=>{
-      return res.status(500).json(err);
-
-    })
 }
 
 const PORT = process.env.PORT || 3000;
