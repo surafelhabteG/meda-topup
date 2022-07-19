@@ -239,7 +239,7 @@ function airTopup(req,res){
         updateTopupStatus(result,res);
 
       }  else {
-        updateTopupStatus(result,res, false);
+        updateTopupStatus(req,res, false);
 
       }
 
