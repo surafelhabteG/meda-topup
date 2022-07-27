@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Transaction = new Schema({
-   
+
     toMobileTelephone: {
-         type: String,
+        type: String,
         required: true
     },
     amount: {
@@ -17,18 +17,23 @@ const Transaction = new Schema({
         required: true
     },
     transactionNo: {
-        type:Number ,
+        type: Number,
         unique: false,
         required: false
     },
-     transactionId: {
-        type:String ,
+    transactionId: {
+        type: String,
         unique: false,
         required: false
     },
     topUpStatus: {
         type: String,
         required: false,
+    },
+    remark: {
+        type: String,
+        required: false,
+        default: null
     },
     paymentStatus: {
         type: String,
@@ -44,7 +49,7 @@ const Transaction = new Schema({
         type: Date,
         default: Date.now
     }
-    ,updatedAt: {
+    , updatedAt: {
         type: Date,
         default: Date.now
     }
@@ -52,16 +57,16 @@ const Transaction = new Schema({
 
 const HistorySchema = new Schema({
     fromMobileTelephone: {
-         type: String,
+        type: String,
         required: true,
-        unique:true
+        unique: true
     },
     medaUUID: {
         type: String,
         unique: true,
     },
-    topupTransaction:[Transaction]
-   
+    topupTransaction: [Transaction]
+
 });
 
 module.exports = mongoose.model('History', HistorySchema);
