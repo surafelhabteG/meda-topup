@@ -33,7 +33,6 @@ const Transaction = new Schema({
     remark: {
         type: String,
         required: false,
-        default: null
     },
     paymentStatus: {
         type: String,
